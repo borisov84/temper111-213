@@ -5,7 +5,8 @@
 
 #define buzz 9
 #define but 2
-#define maxtemp 27
+#define maxtemp 29
+#define delta 2
 
 OneWire oneWire(4); //зеленый на колодке 5 - 111 к
 OneWire oneWire1(8); //синий, на колодке 2 - 213 к
@@ -22,7 +23,7 @@ int c = 0;
 int hot = 0;
 int old_hot = 0;
 
-volatile boolean gsilence = false;
+volatile boolean gsilence = false; // молчат оба датчика
 boolean silence = false;
 boolean alm1 = false;
 boolean alm2 = false;
@@ -63,6 +64,7 @@ void loop() {
   Serial.println(silence);*/
 
   disp.digit4(111, 0);
+  // Если температура выше или равна максимальной
   if (ds.getTempC(sensor1) >= maxtemp)
   {
     if ((alm2 == true) && (gsilence == true) && (alm1 == false))
@@ -76,12 +78,12 @@ void loop() {
       alm1 = true;
       alm(true);
     }
-  }
-  else
+  } // если температура упала ниже максимальной температуры минус дельта
+  else if (ds.getTempC(sensor1) <= maxtemp - delta)
   {
     alm1 = false;
   }
-  
+
   delay(500);
   disp.clear();
   delay(200);
@@ -92,6 +94,7 @@ void loop() {
 
 
   disp.dispFloat(213, 0);
+  // Если температура выше или равна максимальной
   if (ds1.getTempC(sensor2) >= maxtemp)
   {
     if ((alm1 == true) && (gsilence == true) && (alm2 == false))
@@ -106,7 +109,7 @@ void loop() {
       alm(true);
     }
   }
-  else
+  else if (ds1.getTempC(sensor2) <= maxtemp - delta)
   {
     alm2 = false;
   }
@@ -123,6 +126,8 @@ void loop() {
     gsilence = false;
   }
 }
+
+
 void timerIsr()
 {
   disp.timerIsr();
